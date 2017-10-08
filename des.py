@@ -164,7 +164,7 @@ class DES():
             for i in range(0, len(a) - 2):
                 a[i] = a[i + 2]
             a[len(a) - 2] = secondToLastBit
-            a[len[a] - 1] = lastBit
+            a[len(a) - 1] = lastBit
 
             # left shift second half
             lastBit = b[1]
@@ -172,7 +172,7 @@ class DES():
             for i in range(0, len(b) - 2):
                 b[i] = b[i + 2]
             b[len(b) - 2] = secondToLastBit
-            b[len[b] - 1] = lastBit
+            b[len(b) - 1] = lastBit
         return a + b
 
 
@@ -193,8 +193,13 @@ class DES():
             k = list()
             for i in range(1, 17):
                 k.append(self.left_shift(c[i - 1], d[i - 1], i - 1))
-                c[i] = k[i - 1][:28]
-                d[i] = k[i - 1][28:]
+                c.append(k[i - 1][:28])
+                d.append(k[i - 1][28:])
+            # apply PC_2 on k
+            for i in range(0, len(k)):
+                self.keylist.append([])
+                for bit in PC_2:
+                    self.keylist[i].append(k[i][bit - 1])
 
 
     def XOR(self, a, b):
@@ -229,7 +234,10 @@ class DES():
         self.password = key
         self.plaintext = plaintext
         self.createKeys()
-
+        textBitArr = str_to_bitarray(plaintext)
+        ipText = list()
+        for bit in IP:
+            ipText.append(textBitArr[bit - 1])
 
     def decrypt(self, key, ciphertext):
         # Calls the performrounds function.

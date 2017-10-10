@@ -179,8 +179,8 @@ class DES():
             # convert password to bit array
             keyBitArr = str_to_bitarray(self.password)
             # apply permuted choice 1
-            permutedKey = list()
-            self.permute(keyBitArr, PC_1, permutedKey)
+            #permutedKey = list()
+            permutedKey = self.permute(keyBitArr, PC_1)
             # split permuted key into two halves
             c = [permutedKey[:28]]
             d = [permutedKey[28:]]
@@ -192,7 +192,7 @@ class DES():
             # apply PC_2 on k
             for i in range(0, len(k)):
                 self.keylist.append([])
-                self.permute(k[i], PC_2, self.keylist[i])
+                self.keylist[i] = self.permute(k[i], PC_2)
 
     def XOR(self, a, b):
         # xor function - This function is complete
@@ -200,16 +200,15 @@ class DES():
 
     def performRound(self, left, right, roundNum):
         # Performs a single round of the DES algorithm
-        ### YOUR CODE HERE ###
         left.append(right[roundNum])
-        expendRight = list()
-        self.permute(right[roundNum], E, expendRight)
+        #expendRight = list()
+        expendRight = self.permute(right[roundNum], E)
         xorBits = list()
         xorBits = self.XOR(expendRight, self.keylist[roundNum])
         sboxBit = list()
         sboxBit = self.sbox_substition(xorBits)
-        finalPermutation = list()
-        self.permute(sboxBit, P, finalPermutation)
+        #finalPermutation = list()
+        finalPermutation = self.permute(sboxBit, P)
         finalPermutation = list(map(int, finalPermutation))
         right.append(self.XOR(left[roundNum], finalPermutation))
 
@@ -217,7 +216,6 @@ class DES():
         # This function is used by the encrypt and decypt functions.
         # keys - A list of keys used in the rounds
         # text - The orginal text that is converted.
-        ### YOUR CODE HERE ###
         left = list()
         right = list()
         left.append(text[:32])
@@ -226,14 +224,15 @@ class DES():
             self.performRound(left, right, i)
         return right[16] + left[16]
 
-    def permute(self, bits, table, permutedBits):
+    def permute(self, bits, table):
         # Use table to permute the bits
+        permutation = list()
         for bit in table:
-            permutedBits.append(bits[bit - 1])
+            permutation.append(bits[bit - 1])
+        return permutation
 
     def sbox_substition(self, bits):
         # Apply sbox subsitution on the bits
-        ### YOUR CODE HERE ###
         sBits = list()
         for i in range(0, len(bits), 6):
             temp = [bits[i], bits[i + 1], bits[i + 2], bits[i + 3], bits[i + 4], bits[i + 5]]
@@ -249,30 +248,33 @@ class DES():
         self.password = key
         self.plaintext = plaintext
         self.createKeys()
-        textBitArr = str_to_bitarray(plaintext)
-        ipText = list()
-        self.permute(textBitArr, IP, ipText)
-        result = self.performRounds(ipText)
         invpResult = list()
-        self.permute(result, InvP, invpResult)
+        textBitArr = str_to_bitarray(plaintext)
+        #ipText = list()
+        for i in range(0, len(textBitArr), 64):
+            currentBits = textBitArr[i:i+64]
+            ipText = self.permute(currentBits, IP)
+            result = self.performRounds(ipText)
+            invpResult += self.permute(result, InvP)
         cipherText = bitarray_to_str(invpResult)
         return cipherText
 
     def decrypt(self, key, ciphertext):
         # Calls the performrounds function.
-        ### YOUR CODE HERE ###
         self.password = key
         self.plaintext = ciphertext
+        invpCipher = list()
         if not self.keylist:
             self.createKeys()
         self.reverse_key_list(self.keylist)
         #print(self.keylist)
         cipherBitArr = str_to_bitarray(self.plaintext)
-        ipCipher = list()
-        self.permute(cipherBitArr, IP, ipCipher)
-        roundsResult = self.performRounds(ipCipher)
-        invpCipher = list()
-        self.permute(roundsResult, InvP, invpCipher)
+        #ipCipher = list()
+        for i in range(0, len(cipherBitArr), 64):
+            currentBits = cipherBitArr[i:i+64]
+            ipCipher = self.permute(currentBits, IP)
+            roundsResult = self.performRounds(ipCipher)
+            invpCipher += self.permute(roundsResult, InvP)
         plaintext = bitarray_to_str(invpCipher)
         return plaintext
 
@@ -285,7 +287,7 @@ class DES():
 
 if __name__ == '__main__':
     key = "9xc83vgs"
-    plaintext = "Hi world"
+    plaintext = "What are you doing thi00"
     des = DES()
     ciphertext = des.encrypt(key, plaintext)
     text = des.decrypt(key, ciphertext)

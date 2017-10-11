@@ -136,7 +136,6 @@ class DES():
         self.password = None
         self.plaintext = None
         self.keylist = list()
-        # self.createKeys()
 
     def left_shift(self, a, b, round_num):
         # Shifts a list based on a round number
@@ -179,7 +178,6 @@ class DES():
             # convert password to bit array
             keyBitArr = str_to_bitarray(self.password)
             # apply permuted choice 1
-            #permutedKey = list()
             permutedKey = self.permute(keyBitArr, PC_1)
             # split permuted key into two halves
             c = [permutedKey[:28]]
@@ -201,13 +199,11 @@ class DES():
     def performRound(self, left, right, roundNum):
         # Performs a single round of the DES algorithm
         left.append(right[roundNum])
-        #expendRight = list()
         expendRight = self.permute(right[roundNum], E)
         xorBits = list()
         xorBits = self.XOR(expendRight, self.keylist[roundNum])
         sboxBit = list()
         sboxBit = self.sbox_substition(xorBits)
-        #finalPermutation = list()
         finalPermutation = self.permute(sboxBit, P)
         finalPermutation = list(map(int, finalPermutation))
         right.append(self.XOR(left[roundNum], finalPermutation))
@@ -250,7 +246,6 @@ class DES():
         self.createKeys()
         invpResult = list()
         textBitArr = str_to_bitarray(plaintext)
-        #ipText = list()
         for i in range(0, len(textBitArr), 64):
             currentBits = textBitArr[i:i+64]
             ipText = self.permute(currentBits, IP)
@@ -267,9 +262,7 @@ class DES():
         if not self.keylist:
             self.createKeys()
         self.reverse_key_list(self.keylist)
-        #print(self.keylist)
         cipherBitArr = str_to_bitarray(self.plaintext)
-        #ipCipher = list()
         for i in range(0, len(cipherBitArr), 64):
             currentBits = cipherBitArr[i:i+64]
             ipCipher = self.permute(currentBits, IP)
@@ -287,7 +280,7 @@ class DES():
 
 if __name__ == '__main__':
     key = "9xc83vgs"
-    plaintext = "What are you doing thi00"
+    plaintext = "a1b2c3d4e5f6g7h8"
     des = DES()
     ciphertext = des.encrypt(key, plaintext)
     text = des.decrypt(key, ciphertext)
